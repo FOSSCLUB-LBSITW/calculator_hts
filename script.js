@@ -2,9 +2,12 @@ let input = document.getElementById("inputBox");
 let buttons = document.querySelectorAll("button:not(#copyBtn)");
 let string = "";
 const preview = document.getElementById("preview");
+
 let lastOperator = null;
 let lastOperand = null;
 let lastResult = null;
+
+let memory = 0;
 // ==================== COPY BUTTON ====================
 const copyBtn = document.getElementById("copyBtn");
 let copyTimeout = null;
@@ -75,8 +78,32 @@ function updatePreview() {
 buttons.forEach((button) => {
     button.addEventListener("click", (e) => {
         let value = e.target.innerHTML;
+        if (value === "MC") {
+            memory = 0;
+            return;
+        }
 
-    if (value === "=") {
+        else if (value === "MR") {
+            input.value = memory;
+            string = memory.toString();
+            showCopyBtn();
+            return;
+        }
+
+        else if (value === "M+") {
+            if (!isNaN(input.value) && input.value !== "") {
+                memory += parseFloat(input.value);
+            }
+            return;
+        }
+
+        else if (value === "M-") {
+            if (!isNaN(input.value) && input.value !== "") {
+                memory -= parseFloat(input.value);
+            }
+            return;
+        }
+    else if (value === "=") {
     try {
 
         // If user presses "=" again without new input
