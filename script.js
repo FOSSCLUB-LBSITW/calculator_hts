@@ -185,11 +185,28 @@ input.addEventListener("keypress", (e) => {
     }
 });
 
-// Allow pasting and keep string in sync
+// Function to validate if pasted content contains only allowed characters
+function isValidExpression(expression) {
+    const allowedChars = /^[0-9+\-*/(). √!]*$/;
+    return allowedChars.test(expression);
+}
+
+// Allow pasting and keep string in sync with validation
 input.addEventListener("paste", (e) => {
-    setTimeout(() => {
-        string = input.value;
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData("text");
+    
+    // Validate the pasted content
+    if (isValidExpression(pasted)) {
+        string = pasted;
+        input.value = string;
         resultJustCalculated = false;
         hideCopyBtn();
-    }, 0);
+    } else {
+        // Show error if invalid characters are detected
+        input.value = "Invalid expression";
+        string = "";
+        resultJustCalculated = false;
+        hideCopyBtn();
+    }
 });
