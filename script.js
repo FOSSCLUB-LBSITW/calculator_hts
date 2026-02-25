@@ -53,6 +53,7 @@ function factorial(n) {
 buttons.forEach((button) => {
     button.addEventListener("click", (e) => {
         let value = e.target.innerHTML;
+        string = input.value;
 
         if (value === "=") {
             try {
@@ -109,6 +110,7 @@ buttons.forEach((button) => {
         }
 
         else {
+            if (value === "." && string.split(/[+\-*/()]/).pop().includes(".")) return;
             string += value;
             input.value = string;
             hideCopyBtn(); // user is still typing, hide the button
@@ -142,7 +144,20 @@ document.addEventListener("keydown", (e) => {
 const allowedKeys = "0123456789+-*/().!";
 input.addEventListener("keypress", (e) => {
     if (!allowedKeys.includes(e.key)) {
-        e.preventDefault();
+        return e.preventDefault();
+    }
+    
+    if (e.key === ".") {
+        const value = input.value;
+        const pos = input.selectionStart;
+        const operators = /[+\-*/()]/;
+
+        const segmentBefore = value.slice(0, pos).split(operators).pop();
+        const segmentAfter = value.slice(pos).split(operators).shift();
+
+        if (segmentBefore.includes(".") || segmentAfter.includes(".")) {
+            e.preventDefault();
+        }
     }
 });
 
