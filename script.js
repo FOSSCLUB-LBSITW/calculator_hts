@@ -53,7 +53,6 @@ function factorial(n) {
 buttons.forEach((button) => {
     button.addEventListener("click", (e) => {
         let value = e.target.innerHTML;
-        string = input.value;
 
         if (value === "=") {
             try {
