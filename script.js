@@ -120,9 +120,9 @@ buttons.forEach((button) => {
             result !== "Error" ? showCopyBtn() : hideCopyBtn();
         }
 
-        else {
-            // Prevent double operators
+        else if (value === "+" || value === "-" || (string !== "" && !isNaN(value))) {
             if ("+-*/".includes(value) && "+-*/".includes(string.slice(-1))) {
+                if (string.length === 1 && !"+-".includes(value)) return;
                 string = string.slice(0, -1);
             }
 
@@ -179,15 +179,18 @@ document.addEventListener("keydown", (e) => {
 const allowedKeys = "0123456789+-*/().!";
 
 input.addEventListener("keydown", (e) => {
-    if (
-        !allowedKeys.includes(e.key) &&
-        e.key !== "Backspace" &&
-        e.key !== "Delete" &&
-        e.key !== "Enter" &&
-        e.key !== "ArrowLeft" &&
-        e.key !== "ArrowRight"
-    ) {
+    if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab"].includes(e.key)) return;
+    
+    const isAtStart = input.selectionStart === 0;
+    const isOp = "+-*/".includes(e.key);
+    const lastOp = "+-*/".includes(input.value.slice(-1));
+
+    if ((isAtStart && !"+-".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
+
+    if (isOp && lastOp && input.selectionStart === input.value.length) {
+        if (input.value.length === 1 && !"+-".includes(e.key)) return e.preventDefault();
         e.preventDefault();
+        input.value = string = input.value.slice(0, -1) + e.key;
     }
 });
 // =====================================================
