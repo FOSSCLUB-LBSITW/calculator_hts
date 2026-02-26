@@ -102,10 +102,11 @@ buttons.forEach((button) => {
             let num = parseFloat(input.value);
             if (num < 0 || isNaN(num)) {
                 input.value = "Error";
+                string = "";
                 hideCopyBtn();
             } else {
                 input.value = Math.sqrt(num);
-                string = "";
+                string = input.value;
                 showCopyBtn();
             }
             preview.textContent = "";
@@ -115,12 +116,12 @@ buttons.forEach((button) => {
             let num = parseFloat(input.value);
             let result = factorial(num);
             input.value = result;
-            string = "";
+            string = result !== "Error" ? String(result) : "";
             preview.textContent = "";
             result !== "Error" ? showCopyBtn() : hideCopyBtn();
         }
 
-        else if (value === "+" || value === "-" || (string !== "" && !isNaN(value))) {
+        else if (!isNaN(value) || value === "+" || value === "-" || (string !== "" && "+-*/().!".includes(value))) {
             if ("+-*/".includes(value) && "+-*/".includes(string.slice(-1))) {
                 if (string.length === 1 && !"+-".includes(value)) return;
                 string = string.slice(0, -1);
@@ -150,12 +151,13 @@ function calculate() {
         if (!isFinite(result)) {
             input.value = "Can't divide by zero";
             hideCopyBtn();
+            string = "";
         } else {
             input.value = result;
             showCopyBtn();
+            string = String(result);
         }
 
-        string = "";
         preview.textContent = "";
     } catch {
         input.value = "Error";
@@ -185,7 +187,7 @@ input.addEventListener("keydown", (e) => {
     const isOp = "+-*/".includes(e.key);
     const lastOp = "+-*/".includes(input.value.slice(-1));
 
-    if ((isAtStart && !"+-".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
+    if ((isAtStart && !"+-0123456789".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
 
     if (isOp && lastOp && input.selectionStart === input.value.length) {
         if (input.value.length === 1 && !"+-".includes(e.key)) return e.preventDefault();
