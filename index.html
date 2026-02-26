@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculator</title>
-    <link rel = "icon" href="web_Icon/favicon.ico">
+    <link rel="icon" href="web_Icon/favicon.ico">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,52 +12,88 @@
 <div class="main-body">
     <div class="calc">
 
-        <!-- Display wrapper holds both the input and the copy button -->
+        <!-- MODE TOGGLE BUTTONS - ONLY BLUE BUTTON HERE -->
+        <div class="mode-toggle">
+            <button id="scientificModeBtn" class="sci-mode-btn">🔬 Scientific Mode</button>
+            <!-- REMOVED the basic button from here -->
+        </div>
+
+        <!-- Display wrapper -->
         <div class="display-wrapper">
-            <input type="text" placeholder="0" id="inputBox">
-            <button id="copyBtn" class="copy-btn" title="Copy result" aria-label="Copy result">📋</button>
+            <input type="text" placeholder="0" id="inputBox" readonly>
+            <button id="copyBtn" class="copy-btn" title="Copy result">📋</button>
         </div>
+
+        <!-- Live preview -->
         <div id="preview" class="preview"></div>
-        <div class="row">
-            <button class="operator">AC</button>
-            <button class="operator">DEL</button>
-            <button class="operator">√</button>
-            <button class="operator">!</button>
+
+        <!-- Scientific buttons (hidden by default) -->
+        <div id="scientificButtons" class="scientific-row" style="display: none;">
+            <button class="sci-operator">sin</button>
+            <button class="sci-operator">cos</button>
+            <button class="sci-operator">tan</button>
+            <button class="sci-operator">log</button>
+            <button class="sci-operator">ln</button>
+            <button class="sci-operator">π</button>
+            <button class="sci-operator">e</button>
+            <button class="sci-operator">x²</button>
+            <button class="sci-operator">x³</button>
+            <button class="sci-operator">x^y</button>
+            <button class="sci-operator">10^x</button>
+            <button class="sci-operator">1/x</button>
+            <button class="sci-operator">|x|</button>
+            <button class="sci-operator">exp</button>
+            <button class="sci-operator">mod</button>
+            <button class="sci-operator">(</button>
+            <button class="sci-operator">)</button>
+            <!-- BACK TO BASIC BUTTON - ONLY HERE -->
+            <button id="basicModeBtn" class="basic-mode-btn">🔙 BACK TO BASIC MODE</button>
         </div>
 
-        <div class="row">
-            <button>7</button>
-            <button>8</button>
-            <button>9</button>
-            <button class="operator">/</button>
-        </div>
+        <!-- Main calculator buttons -->
+        <div class="buttons-grid">
+            <div class="row">
+                <button class="operator">AC</button>
+                <button class="operator">DEL</button>
+                <button class="operator">√</button>
+                <button class="operator">!</button>
+            </div>
 
-        <div class="row">
-            <button>4</button>
-            <button>5</button>
-            <button>6</button>
-            <button class="operator">*</button>
-        </div>
+            <div class="row">
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button class="operator">/</button>
+            </div>
 
-        <div class="row">
-            <button>1</button>
-            <button>2</button>
-            <button>3</button>
-            <button class="operator">-</button>
-        </div>
+            <div class="row">
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button class="operator">*</button>
+            </div>
 
-        <div class="row">
-            <button>00</button>
-            <button>0</button>
-            <button>.</button>
-            <button class="operator">+</button>
-        </div>
+            <div class="row">
+                <button>1</button>
+                <button>2</button>
+                <button>3</button>
+                <button class="operator">-</button>
+            </div>
 
-        <div class="row">
-            <button class="equalbtn">=</button>
+            <div class="row">
+                <button>00</button>
+                <button>0</button>
+                <button>.</button>
+                <button class="operator">+</button>
+            </div>
+
+            <div class="row">
+                <button class="equalbtn">=</button>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="script.js"></script>
 </body>
+</html>

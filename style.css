@@ -7,140 +7,283 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    padding: 10px;
 }
 
 /* Calculator container */
 .calc {
-    width: 350px;
-    max-width: 90vw;
-    background: #1e1e2f;
-    padding: 25px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    width: 380px;
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 25px;
+    text-align: center;
+    box-sizing: border-box;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* Wraps the input + copy button together */
+/* Mode toggle container */
+.mode-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+/* Scientific Mode button (Blue) */
+.sci-mode-btn {
+    width: auto;
+    height: 45px;
+    padding: 0 25px;
+    border-radius: 23px;
+    background: linear-gradient(45deg, #4a90e2, #357abd);
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+    transition: 0.3s;
+}
+
+.sci-mode-btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(45deg, #357abd, #4a90e2);
+}
+
+/* Basic Mode button (Red) */
+.basic-mode-btn {
+    width: auto;
+    height: 40px;
+    padding: 0 25px;
+    border-radius: 23px;
+    background: linear-gradient(45deg, #ff6b6b, #ee5253);
+    font-size: 16px;
+    font-weight: bold;
+    border: 2px solid white;
+    color: white;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.5);
+    transition: 0.3s;
+}
+
+.basic-mode-btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(45deg, #ee5253, #ff6b6b);
+    border: 2px solid yellow;
+}
+
+/* Display wrapper */
 .display-wrapper {
     position: relative;
-    margin-bottom: 10px;
-}
-
-/* Live preview */
-.preview {
-    height: 20px;
-    color: #0ab448;
-    font-size: 16px;
-    text-align: right;
-    margin-bottom: 10px;
-    padding-right: 10px;
-    opacity: 0.8;
+    margin-bottom: 5px;
+    margin-top: 60px;
 }
 
 /* Input display */
 input {
     width: 100%;
-    padding: 20px;
-    padding-left: 50px; /* space for copy button */
-    font-size: 28px;
+    height: 100px;
+    padding: 0 50px 0 15px;
+    font-size: 30px;
     text-align: right;
     background: #2c2c3c;
     color: #fff;
     border: none;
-    border-radius: 12px;
-    box-shadow: inset 0 3px 6px rgba(0,0,0,0.2);
+    border-radius: 15px;
     box-sizing: border-box;
+    font-weight: 500;
 }
 
 /* Copy button */
 .copy-btn {
     position: absolute;
-    left: 12px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    width: 34px;
-    height: 34px;
+    width: 35px;
+    height: 35px;
     border-radius: 8px;
     border: none;
     background: rgba(255,255,255,0.1);
-    color: white;
-    font-size: 16px;
+    color: #aaa;
+    font-size: 18px;
     cursor: pointer;
-    opacity: 0.7;
-    transition: 0.2s ease;
-    display: none; /* shown only when result exists */
+    display: none;
+    padding: 0;
+    line-height: 35px;
+    transition: 0.2s;
 }
 
 .copy-btn:hover {
-    opacity: 1;
     background: rgba(255,255,255,0.2);
+    color: white;
 }
 
 .copy-btn.copied {
     color: #0ab448;
-    opacity: 1;
+    font-size: 13px;
+}
+
+/* Live preview */
+.preview {
+    height: 24px;
+    color: #0ab448;
+    font-size: 16px;
+    text-align: right;
+    margin-bottom: 10px;
+    opacity: 0.9;
+    padding-right: 5px;
+}
+
+/* Scientific buttons container */
+.scientific-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #252525;
+    border-radius: 18px;
+    border: 1px solid #444;
+}
+
+.scientific-row button {
+    width: 100%;
+    height: 45px;
+    font-size: 15px;
+    border-radius: 10px;
+    background: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: 0.2s;
+    font-weight: 500;
+}
+
+.scientific-row button:hover {
+    background: #444;
+    transform: scale(1.02);
+}
+
+.sci-operator {
+    background: linear-gradient(135deg, #ff6b6b, #ee5253) !important;
+    font-weight: bold;
 }
 
 /* Button Grid */
-.row {
+.buttons-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 10px;
+}
+
+.row {
+    display: contents;
 }
 
 button {
-    padding: 18px 0;
-    font-size: 20px;
+    width: 100%;
+    height: 60px;
+    font-size: 24px;
     border: none;
-    border-radius: 12px;
+    border-radius: 15px;
     background: #33334d;
     color: #fff;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    transition: all 0.2s ease;
+    transition: 0.15s;
+    padding: 0;
+    font-weight: 500;
 }
 
 button:hover {
-    transform: translateY(-2px);
     background: #4b4b6a;
-}
-
-button:active {
-    transform: translateY(1px);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    transform: scale(0.98);
 }
 
 /* Operators */
 .operator {
-    background: linear-gradient(45deg, #0ab448, #22933e);
+    background: linear-gradient(135deg, #0ab448, #22933e);
     font-weight: bold;
-    color: #fff;
-}
-
-.operator:hover {
-    background: linear-gradient(45deg, #22933e, #0ab448);
 }
 
 /* Equal button */
 .equalbtn {
     grid-column: span 4;
-    background: linear-gradient(45deg, #ff005f, #ff5f00);
+    background: linear-gradient(135deg, #ff005f, #ff5f00);
     font-weight: bold;
+    height: 70px;
 }
 
-.equalbtn:hover {
-    background: linear-gradient(45deg, #ff5f00, #ff005f);
-}
-
-/* Small responsive tweaks */
-@media screen and (max-width: 400px) {
-    input {
-        font-size: 22px;
+/* Responsive */
+@media screen and (max-width: 380px) {
+    .calc {
+        width: 320px;
         padding: 15px;
     }
-
-    button {
-        font-size: 18px;
-        padding: 15px 0;
+    
+    .scientific-row button {
+        height: 40px;
+        font-size: 13px;
     }
+    
+    button {
+        height: 55px;
+        font-size: 22px;
+    }
+    
+    .equalbtn {
+        height: 60px;
+    }
+    
+    .sci-mode-btn, .basic-mode-btn {
+        height: 40px;
+        font-size: 14px;
+        padding: 0 15px;
+    }
+}
+.basic-mode-btn {
+    justify-content: center;
+    gap: 8px;
+    font-size: 15px;
+}
+.mode-toggle button {
+    display: flex;
+}
+.mode-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* Basic Mode button inside scientific section */
+.basic-mode-btn {
+    grid-column: span 2; /* Make it full width */
+    background: linear-gradient(45deg, #ff4444, #cc0000) !important;
+    color: white !important;
+    border: 3px solid rgb(196, 196, 68) !important;
+    font-weight: bold !important;
+    font-size: 13px !important;
+    padding: 15px !important;
+    border-radius: 25px !important;
+    cursor: pointer !important;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.7) !important;
+    margin-top: 10px !important;
+    height: 30px !important;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.basic-mode-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.9) !important;
 }
