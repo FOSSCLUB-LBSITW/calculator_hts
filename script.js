@@ -75,10 +75,26 @@ function factorial(n) {
 // ==================== SCIENTIFIC CALCULATIONS ====================
 function calculateScientific(expr) {
     try {
+        // First, convert degree to radians for trig functions
+        // This finds patterns like sin(30), cos(60), etc. and converts the number to radians
+        
+        // Handle sin( number )
+        expr = expr.replace(/sin\(([^)]+)\)/g, function(match, p1) {
+            return 'Math.sin(' + p1 + ' * Math.PI / 180)';
+        });
+        
+        // Handle cos( number )
+        expr = expr.replace(/cos\(([^)]+)\)/g, function(match, p1) {
+            return 'Math.cos(' + p1 + ' * Math.PI / 180)';
+        });
+        
+        // Handle tan( number )
+        expr = expr.replace(/tan\(([^)]+)\)/g, function(match, p1) {
+            return 'Math.tan(' + p1 + ' * Math.PI / 180)';
+        });
+        
+        // Handle other scientific functions
         expr = expr
-            .replace(/sin\(/g, 'Math.sin(')
-            .replace(/cos\(/g, 'Math.cos(')
-            .replace(/tan\(/g, 'Math.tan(')
             .replace(/log\(/g, 'Math.log10(')
             .replace(/ln\(/g, 'Math.log(')
             .replace(/π/g, 'Math.PI')
@@ -93,7 +109,6 @@ function calculateScientific(expr) {
         return "Error";
     }
 }
-
 // ==================== UPDATE PREVIEW ====================
 function updatePreview() {
     if (!string) {
