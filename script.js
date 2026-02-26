@@ -80,6 +80,13 @@ buttons.forEach((button) => {
     button.addEventListener("click", (e) => {
         let value = e.target.innerHTML;
 
+        if (input.value === "Error" || input.value === "Can't divide by zero" || input.value === "Too Large") {
+            if (value !== "AC") {
+                input.value = "";
+                string = "";
+            }
+        }
+
         if (value === "=") {
             calculate();
         }
@@ -144,6 +151,8 @@ buttons.forEach((button) => {
 
 // ==================== CALCULATE FUNCTION ====================
 function calculate() {
+    if (!input.value) return;
+
     try {
         let result = eval(input.value);
 
@@ -179,6 +188,13 @@ document.addEventListener("keydown", (e) => {
 const allowedKeys = "0123456789+-*/().!";
 
 input.addEventListener("keydown", (e) => {
+    if (input.value === "Error" || input.value === "Can't divide by zero" || input.value === "Too Large") {
+        if (allowedKeys.includes(e.key) || e.key === "Backspace" || e.key === "Delete") {
+            input.value = "";
+            string = "";
+        }
+    }
+
     if (
         !allowedKeys.includes(e.key) &&
         e.key !== "Backspace" &&
