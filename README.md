@@ -21,6 +21,10 @@ This project performs basic arithmetic operations with an interactive and user-f
 
 ---
 
+## Screenshot
+
+![alt text](<Screenshot 2026-02-27 054434.png>)
+
 ## 🛠️ Tech Stack
 
 - **HTML** – Structure  
