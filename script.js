@@ -122,6 +122,29 @@ function calculate() {
         hideCopyBtn();
     }
 }
+
+/** Handles the evaluation of the current string expression */
+function calculate() {
+    try {
+        // Ensure no leading zeros to prevent octal interpretation
+        string = string.replace(/(^|[+\-*/(])0+(?=\d)/g, '$1');
+        string = eval(string);
+        // eval("5/0") returns Infinity — treat it as an error
+        if (!isFinite(string)) {
+            input.value = "Can't divide by zero";
+            string = "";
+            hideCopyBtn();
+        } else {
+            input.value = string;
+            string = "";
+            showCopyBtn();
+        }
+    } catch {
+        input.value = "Error";
+        string = "";
+        hideCopyBtn();
+    }
+}
 // =====================================================
 
 
@@ -180,8 +203,6 @@ buttons.forEach((button) => {
             }
 
             string += value;
-
-            // Remove leading zeros
             string = string.replace(/(^|[+\-*/(])0+(?=\d)/g, '$1');
 
             input.value = string;
@@ -198,6 +219,8 @@ buttons.forEach((button) => {
 // ==================== ENTER KEY SUPPORT ====================
 document.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
+        // If the user types directly into the box, we need to update 'string' before calculating
+        string = input.value;
         calculate();
     }
 });
@@ -235,7 +258,7 @@ input.addEventListener("paste", (e) => {
         hideCopyBtn();
         updatePreview();
     }
-});
+    if ("+-*/".includes(e.key) && "+-*/".includes(input.value.slice(-1))) input.value = input.value.slice(0, -1);
 // =====================================================
 
 
