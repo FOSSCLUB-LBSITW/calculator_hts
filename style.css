@@ -1,94 +1,244 @@
-body {
-    background: #f4f4f4;
-    font-family: Arial, sans-serif;
+let input = document.getElementById("inputBox");
+let buttons = document.querySelectorAll(".calc button");
+let preview = document.getElementById("preview");
+let string = "";
+
+let lastOperator = null;
+let lastOperand = null;
+let lastResult = null;
+
+// ==================== COPY BUTTON ====================
+const copyBtn = document.getElementById("copyBtn");
+let copyTimeout = null;
+
+function showCopyBtn() {
+    copyBtn.style.display = "block";
 }
 
-.calc {
-    width: 350px;
-    background: black;
-    margin: 60px auto;
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
+function hideCopyBtn() {
+    copyBtn.style.display = "none";
+    copyBtn.textContent = "📋";
+    copyBtn.classList.remove("copied");
+    clearTimeout(copyTimeout);
 }
 
-/* Wraps the input + copy button together */
-.display-wrapper {
-    position: relative;
-    margin-bottom: 15px;
-}
+copyBtn.addEventListener("click", () => {
+    const result = input.value;
+    if (!result || result === "Error" || result === "Can't divide by zero") return;
 
-input {
-    width: 90%;
-    padding: 15px;
-    padding-right: 44px; /* make room for the copy button */
-    font-size: 26px;
-    text-align: right;
-    background: transparent;
-    color: white;
-    border: 2px solid white;
-    border-radius: 8px;
-    box-sizing: border-box;
-}
+    navigator.clipboard.writeText(result).then(() => {
+        copyBtn.textContent = "Copied!";
+        copyBtn.classList.add("copied");
 
-/* Copy button — sits inside the display border, top-left corner */
-.copy-btn {
-    position: absolute;
-    top: 50%;
-    left: 18px;
-    transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
-    margin: 0;
-    padding: 0;
-    font-size: 22px;
-    line-height: 28px;
-    border-radius: 6px;
-    background: transparent;
-    color: white;
-    border: none;
-    cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.2s, background 0.2s;
+        clearTimeout(copyTimeout);
+        copyTimeout = setTimeout(() => {
+            copyBtn.textContent = "📋";
+            copyBtn.classList.remove("copied");
+        }, 2000);
+    }).catch(() => {
+        input.select();
+        document.execCommand("copy");
+    });
+});
+// =====================================================
 
-    /* Hidden by default — shown only when a result exists */
-    display: none;
-}
 
-.copy-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    opacity: 1;
+// ==================== FACTORIAL ====================
+function factorial(n) {
+    if (n < 0 || !Number.isInteger(n)) return "Error";
+    if (n > 170) return "Too Large";
+    let fact = 1;
+    for (let i = 1; i <= n; i++) {
+        fact *= i;
+    }
+    return fact;
 }
+// =====================================================
 
-/* "Copied!" state */
-.copy-btn.copied {
-    font-size: 10px;
-    opacity: 1;
-    color: #0ab448;
-}
 
-button {
-    width: 60px;
-    height: 60px;
-    margin: 6px;
-    font-size: 18px;
-    border: none;
-    border-radius: 50%;
-    background: #2c2c2c;
-    color: white;
-    cursor: pointer;
-}
+// ==================== LIVE PREVIEW ====================
+function updatePreview() {
+    if (!string) {
+        preview.textContent = "";
+        return;
+    }
 
-button:hover {
-    background: #5f5e5e;
+    try {
+        let result = eval(string);
+        if (!isFinite(result)) {
+            preview.textContent = "";
+            return;
+        }
+        preview.textContent = "= " + result;
+    } catch {
+        preview.textContent = "";
+    }
 }
+// =====================================================
 
-.operator {
-    background: linear-gradient(45deg, #0ab448, #22933e);
-    font-weight: bold;
-}
 
-.equalbtn {
-    background: linear-gradient(45deg, #ff005f, #ff5f00);
-    font-weight: bold;
+// ==================== CALCULATE FUNCTION ====================
+function calculate() {
+    try {
+
+        // If "=" pressed repeatedly
+        if (string === "" && lastOperator && lastOperand !== null) {
+            let expression = lastResult + lastOperator + lastOperand;
+            lastResult = eval(expression);
+            input.value = lastResult;
+            showCopyBtn();
+            return;
+        }
+
+        let result = eval(string);
+
+        if (!isFinite(result)) {
+            input.value = "Can't divide by zero";
+            string = "";
+            preview.textContent = "";
+            hideCopyBtn();
+            return;
+        }
+
+        // Save last operator and operand
+        let match = string.match(/([+\-*/])(\d+\.?\d*)$/);
+        if (match) {
+            lastOperator = match[1];
+            lastOperand = match[2];
+        }
+
+        lastResult = result;
+
+        input.value = result;
+        string = "";
+        preview.textContent = "";
+        showCopyBtn();
+
+    } catch {
+        input.value = "Error";
+        string = "";
+        preview.textContent = "";
+        hideCopyBtn();
+    }
 }
+// =====================================================
+
+
+// ==================== BUTTON CLICK ====================
+buttons.forEach((button) => {
+    button.addEventListener("click", (e) => {
+        let value = e.target.innerHTML;
+
+        if (value === "=") {
+            calculate();
+        }
+
+        else if (value === "AC") {
+            string = "";
+            input.value = "";
+            lastOperator = null;
+            lastOperand = null;
+            lastResult = null;
+            preview.textContent = "";
+            hideCopyBtn();
+        }
+
+        else if (value === "DEL") {
+            string = string.slice(0, -1);
+            input.value = string;
+            if (!string) hideCopyBtn();
+            updatePreview();
+        }
+
+        else if (value === "√") {
+            let num = parseFloat(input.value);
+            if (num < 0 || isNaN(num)) {
+                input.value = "Error";
+                hideCopyBtn();
+            } else {
+                input.value = Math.sqrt(num);
+                string = "";
+                showCopyBtn();
+            }
+            preview.textContent = "";
+        }
+
+        else if (value === "!") {
+            let num = parseFloat(input.value);
+            let result = factorial(num);
+            input.value = result;
+            string = "";
+            preview.textContent = "";
+            result !== "Error" ? showCopyBtn() : hideCopyBtn();
+        }
+
+        else {
+            // Prevent double operators
+            if ("+-*/".includes(value) && "+-*/".includes(string.slice(-1))) {
+                string = string.slice(0, -1);
+            }
+
+            string += value;
+
+            // Remove leading zeros
+            string = string.replace(/(^|[+\-*/(])0+(?=\d)/g, '$1');
+
+            input.value = string;
+            hideCopyBtn();
+            updatePreview();
+        }
+
+        input.scrollLeft = input.scrollWidth;
+    });
+});
+// =====================================================
+
+
+// ==================== ENTER KEY SUPPORT ====================
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        calculate();
+    }
+});
+// =====================================================
+
+
+// ==================== BLOCK INVALID KEYBOARD INPUT ====================
+const allowedKeys = "0123456789+-*/().!";
+
+input.addEventListener("keydown", (e) => {
+    if (
+        !allowedKeys.includes(e.key) &&
+        e.key !== "Backspace" &&
+        e.key !== "Delete" &&
+        e.key !== "Enter" &&
+        e.key !== "ArrowLeft" &&
+        e.key !== "ArrowRight"
+    ) {
+        e.preventDefault();
+    }
+});
+// =====================================================
+
+
+// ==================== PASTE SUPPORT ====================
+input.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData("text");
+
+    if (!isNaN(pasted) && pasted.trim() !== "") {
+        input.value = pasted.trim();
+        string = input.value;
+        hideCopyBtn();
+        updatePreview();
+    }
+});
+// =====================================================
+
+
+// ==================== INPUT LISTENER ====================
+input.addEventListener("input", () => {
+    string = input.value;
+    updatePreview();
+});
+// =====================================================
