@@ -122,6 +122,29 @@ function calculate() {
         hideCopyBtn();
     }
 }
+
+/** Handles the evaluation of the current string expression */
+function calculate() {
+    try {
+        // Ensure no leading zeros to prevent octal interpretation
+        string = string.replace(/(^|[+\-*/(])0+(?=\d)/g, '$1');
+        string = eval(string);
+        // eval("5/0") returns Infinity — treat it as an error
+        if (!isFinite(string)) {
+            input.value = "Can't divide by zero";
+            string = "";
+            hideCopyBtn();
+        } else {
+            input.value = string;
+            string = "";
+            showCopyBtn();
+        }
+    } catch {
+        input.value = "Error";
+        string = "";
+        hideCopyBtn();
+    }
+}
 // =====================================================
 
 
@@ -162,10 +185,11 @@ buttons.forEach((button) => {
             let num = parseFloat(input.value);
             if (num < 0 || isNaN(num)) {
                 input.value = "Error";
+                string = "";
                 hideCopyBtn();
             } else {
                 input.value = Math.sqrt(num);
-                string = "";
+                string = input.value;
                 showCopyBtn();
             }
             preview.textContent = "";
@@ -175,20 +199,18 @@ buttons.forEach((button) => {
             let num = parseFloat(input.value);
             let result = factorial(num);
             input.value = result;
-            string = "";
+            string = result !== "Error" ? String(result) : "";
             preview.textContent = "";
             result !== "Error" ? showCopyBtn() : hideCopyBtn();
         }
 
-        else {
-            // Prevent double operators
+        else if (!isNaN(value) || value === "+" || value === "-" || (string !== "" && "+-*/().!".includes(value))) {
             if ("+-*/".includes(value) && "+-*/".includes(string.slice(-1))) {
+                if (string.length === 1 && !"+-".includes(value)) return;
                 string = string.slice(0, -1);
             }
 
             string += value;
-
-            // Remove leading zeros
             string = string.replace(/(^|[+\-*/(])0+(?=\d)/g, '$1');
 
             input.value = string;
@@ -231,6 +253,8 @@ function calculate() {
 // ==================== ENTER KEY SUPPORT ====================
 document.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
+        // If the user types directly into the box, we need to update 'string' before calculating
+        string = input.value;
         calculate();
     }
 });
@@ -258,7 +282,19 @@ input.addEventListener("keydown", (e) => {
         e.key !== "ArrowLeft" &&
         e.key !== "ArrowRight"
     ) {
+      if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab"].includes(e.key)) return;
+    
+      const isAtStart = input.selectionStart === 0;
+      const isOp = "+-*/".includes(e.key);
+      const lastOp = "+-*/".includes(input.value.slice(-1));
+
+      if ((isAtStart && !"+-0123456789".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
+
+      if (isOp && lastOp && input.selectionStart === input.value.length) {
+        if (input.value.length === 1 && !"+-".includes(e.key)) return e.preventDefault();
         e.preventDefault();
+        input.value = string = input.value.slice(0, -1) + e.key;
+      }
     }
 });
 // =====================================================
@@ -275,7 +311,7 @@ input.addEventListener("paste", (e) => {
         hideCopyBtn();
         updatePreview();
     }
-});
+    if ("+-*/".includes(e.key) && "+-*/".includes(input.value.slice(-1))) input.value = input.value.slice(0, -1);
 // =====================================================
 
 
