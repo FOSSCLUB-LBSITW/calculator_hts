@@ -198,8 +198,6 @@ buttons.forEach((button) => {
         }
 
         else if (!isNaN(value) || value === "+" || value === "-" || (string !== "" && "+-*/().!".includes(value))) {
-            if (value === "." && string.split(/[+\-*/()]/).pop().includes(".")) return;
-          
             if ("+-*/".includes(value) && "+-*/".includes(string.slice(-1))) {
                 if (string.length === 1 && !"+-".includes(value)) return;
                 string = string.slice(0, -1);
@@ -253,24 +251,26 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-// Block invalid keyboard input
-const allowedKeys = "0123456789+-*/().!";
-input.addEventListener("keypress", (e) => {
-    if (!allowedKeys.includes(e.key)) {
-        return e.preventDefault();
-    }
+// Sync the 'string' variable with manual input edits
+input.addEventListener("input", (e) => {
+    string = e.target.value;
+});
+
+// ==================== BLOCK INVALID KEYBOARD INPUT ====================
+
+input.addEventListener("keydown", (e) => {
+    if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab"].includes(e.key)) return;
     
-    if (e.key === ".") {
-        const value = input.value;
-        const pos = input.selectionStart;
-        const operators = /[+\-*/()]/;
+    const isAtStart = input.selectionStart === 0;
+    const isOp = "+-*/".includes(e.key);
+    const lastOp = "+-*/".includes(input.value.slice(-1));
 
-        const segmentBefore = value.slice(0, pos).split(operators).pop();
-        const segmentAfter = value.slice(pos).split(operators).shift();
+    if ((isAtStart && !"+-0123456789".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
 
-        if (segmentBefore.includes(".") || segmentAfter.includes(".")) {
-            e.preventDefault();
-        }
+    if (isOp && lastOp && input.selectionStart === input.value.length) {
+        if (input.value.length === 1 && !"+-".includes(e.key)) return e.preventDefault();
+        e.preventDefault();
+        input.value = string = input.value.slice(0, -1) + e.key;
     }
 });
 // =====================================================
