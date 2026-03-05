@@ -102,6 +102,7 @@ function calculate() {
     if (!input.value) return;
 
     try {
+
         let processed = preprocessString(input.value);
         let result = eval(processed);
 
@@ -225,28 +226,14 @@ buttons.forEach((button) => {
             input.value = string;
             hideCopyBtn();
             updatePreview();
-        }
 
-        else if (value === "%") {
-            try {
-                let num = eval(string);
-                if (!isFinite(num)) throw new Error('invalid');
-                input.value = num / 100;
-                string = String(input.value);
-                showCopyBtn();
-            } catch {
-                input.value = "Error";
-                string = "";
-                hideCopyBtn();
-            }
-            preview.textContent = "";
         }
 
         else if (
             !isNaN(value) ||
             value === "+" ||
             value === "-" ||
-            (string !== "" && "+-*/().!".includes(value))
+            (string !== "" && "+-*/().!%".includes(value))
         ) {
 
             if ("+-*/".includes(value) && "+-*/".includes(string.slice(-1))) {
@@ -256,7 +243,23 @@ buttons.forEach((button) => {
                 string = string.slice(0, -1);
             }
 
+            // Explicitly block multiple zeros
+            if ((value === "0" || value === "00") && (string === "0" || string.match(/[+\-*/(]0$/))) {
+                return;
+            }
+
+            // Block multiple decimals in the same number
+            if (value === ".") {
+                let parts = string.split(/[+\-*/()!%]/);
+                let currentNumber = parts[parts.length - 1];
+                if (currentNumber.includes(".")) {
+                    return;
+                }
+            }
+
             string += value;
+            // Additional cleanup just to be safe
+            string = string.replace(/(^|[+\-*/(])0+(?=\d)/g, '$1');
 
             input.value = string;
 
@@ -277,11 +280,21 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
         string = input.value;
         calculate();
+    } else if (e.key === "Escape") {
+        string = "";
+        input.value = "";
+        lastOperator = null;
+        lastOperand = null;
+        lastResult = null;
+        preview.textContent = "";
+        hideCopyBtn();
     }
 });
 
 // ==================== INPUT LISTENER ====================
 input.addEventListener("input", () => {
+    // Strip leading zeros
+    input.value = input.value.replace(/(^|[+\-*/(])0+(?=\d)/g, '$1');
     string = input.value;
     updatePreview();
 });
@@ -300,20 +313,52 @@ input.addEventListener("keydown", (e) => {
         e.key !== "Backspace" &&
         e.key !== "Delete" &&
         e.key !== "Enter" &&
+        e.key !== "Escape" &&
         e.key !== "ArrowLeft" &&
         e.key !== "ArrowRight"
     ) {
-        if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab"].includes(e.key)) return;
+        e.preventDefault();
+        return;
+    }
 
-        const isAtStart = input.selectionStart === 0;
-        const isOp = "+-*/".includes(e.key);
-        const lastOp = "+-*/".includes(input.value.slice(-1));
+    if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab", "Escape"].includes(e.key)) return;
 
-        if ((isAtStart && !"+-0123456789".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
+    const isAtStart = input.selectionStart === 0;
+    const isOp = "+-*/".includes(e.key);
+    const lastOp = "+-*/".includes(input.value.slice(-1));
 
-        if (isOp && lastOp && input.selectionStart === input.value.length) {
-            if (input.value.length === 1 && !"+-".includes(e.key)) return e.preventDefault();
-            e.preventDefault();
-            input.value = string = input.value.slice(0, -1) + e.key;
+    if ((isAtStart && !"+-0123456789".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
+
+    if (isOp && lastOp && input.selectionStart === input.value.length) {
+        if (input.value.length === 1 && !"+-".includes(e.key)) return e.preventDefault();
+        e.preventDefault();
+        input.value = string = input.value.slice(0, -1) + e.key;
+    }
+
+    // Additional checks from PR 93 (Multiple Decimals)
+    // Block multiple decimals via keyboard
+    if (e.key === ".") {
+        let parts = input.value.split(/[+\-*/()!%]/);
+        let currentNumber = parts[parts.length - 1];
+        if (currentNumber.includes(".")) {
+            return e.preventDefault();
         }
-    });
+    }
+});
+
+// ==================== PASTE SUPPORT ====================
+input.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData("text");
+
+    // Validate if the pasted text only consists of allowed keys
+    const isValid = pasted.split("").every(char => allowedKeys.includes(char));
+
+    if (isValid && pasted.trim() !== "") {
+        input.value = pasted.trim();
+        string = input.value;
+        hideCopyBtn();
+        updatePreview();
+    }
+});
+// =====================================================
