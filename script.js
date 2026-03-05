@@ -1,23 +1,24 @@
 let input = document.getElementById("inputBox");
-let buttons = document.querySelectorAll("button:not(#copyBtn)");
+let buttons = document.querySelectorAll(".calc button");
+let preview = document.getElementById("preview");
 let string = "";
-const preview = document.getElementById("preview");
+
+const allowedKeys = "0123456789+-*/().!";
 
 let lastOperator = null;
 let lastOperand = null;
 let lastResult = null;
 
 let memory = 0;
+
 // ==================== COPY BUTTON ====================
 const copyBtn = document.getElementById("copyBtn");
 let copyTimeout = null;
 
-/** Shows the copy button — called whenever a result is ready on the display */
 function showCopyBtn() {
     copyBtn.style.display = "block";
 }
 
-/** Hides the copy button — called on AC or when display is cleared */
 function hideCopyBtn() {
     copyBtn.style.display = "none";
     copyBtn.textContent = "📋";
@@ -27,41 +28,47 @@ function hideCopyBtn() {
 
 copyBtn.addEventListener("click", () => {
     const result = input.value;
-    if (!result || result === "Error") return;
+
+    if (!result || result === "Error" || result === "Can't divide by zero") return;
 
     navigator.clipboard.writeText(result).then(() => {
-        // Show "Copied!" feedback briefly, then restore the icon
         copyBtn.textContent = "Copied!";
         copyBtn.classList.add("copied");
+
         clearTimeout(copyTimeout);
+
         copyTimeout = setTimeout(() => {
             copyBtn.textContent = "📋";
             copyBtn.classList.remove("copied");
         }, 2000);
-    }).catch(() => {
-        // Fallback for browsers where clipboard write fails
-        input.select();
-        document.execCommand("copy");
     });
 });
-// =====================================================
 
-// Factorial function
+// ==================== FACTORIAL ====================
 function factorial(n) {
+
     if (n < 0 || !Number.isInteger(n)) return "Error";
+    if (n > 170) return "Too Large";
+
     let fact = 1;
+
     for (let i = 1; i <= n; i++) {
         fact *= i;
     }
+
     return fact;
 }
+
+// ==================== LIVE PREVIEW ====================
 function updatePreview() {
+
     if (!string) {
         preview.textContent = "";
         return;
     }
 
     try {
+
         let result = eval(string);
 
         if (!isFinite(result)) {
@@ -70,14 +77,51 @@ function updatePreview() {
         }
 
         preview.textContent = "= " + result;
+
     } catch {
         preview.textContent = "";
     }
 }
 
+// ==================== CALCULATE FUNCTION ====================
+function calculate() {
+
+    try {
+
+        let result = eval(string);
+
+        if (!isFinite(result)) {
+
+            input.value = "Can't divide by zero";
+            string = "";
+            hideCopyBtn();
+
+        } else {
+
+            input.value = result;
+            string = String(result);
+            showCopyBtn();
+        }
+
+        preview.textContent = "";
+
+    } catch {
+
+        input.value = "Error";
+        string = "";
+        hideCopyBtn();
+    }
+}
+
+// ==================== BUTTON CLICK ====================
 buttons.forEach((button) => {
+
     button.addEventListener("click", (e) => {
+
         let value = e.target.innerHTML;
+
+        // ===== MEMORY FUNCTIONS =====
+
         if (value === "MC") {
             memory = 0;
             return;
@@ -103,162 +147,117 @@ buttons.forEach((button) => {
             }
             return;
         }
-    else if (value === "=") {
-    try {
 
-        // If user presses "=" again without new input
-        if (string === "" && lastOperator && lastOperand !== null) {
-            let expression = lastResult + lastOperator + lastOperand;
-            lastResult = eval(expression);
-            input.value = lastResult;
-            showCopyBtn();
-            return;
+        // ===== CALCULATE =====
+
+        else if (value === "=") {
+            calculate();
         }
 
-        // Normal calculation
-        let result = eval(string);
+        else if (value === "AC") {
 
-        if (!isFinite(result)) {
-            input.value = "Can't divide by zero";
             string = "";
+            input.value = "";
             preview.textContent = "";
             hideCopyBtn();
-            return;
+
+            lastOperator = null;
+            lastOperand = null;
+            lastResult = null;
         }
-
-        // Extract last operator and operand
-        let match = string.match(/([+\-*/])(\d+\.?\d*)$/);
-        if (match) {
-            lastOperator = match[1];
-            lastOperand = match[2];
-        }
-
-        lastResult = result;
-
-        input.value = result;
-        string = "";
-        preview.textContent = "";
-        showCopyBtn();
-
-    } catch {
-        input.value = "Error";
-        string = "";
-        preview.textContent = "";
-        hideCopyBtn();
-    }
-}
-
-    else if (value === "AC") {
-    string = "";
-    input.value = "";
-    lastOperator = null;
-    lastOperand = null;
-    lastResult = null;
-    preview.textContent = "";
-    hideCopyBtn();
-}
 
         else if (value === "DEL") {
-            string = string.slice(0, -1);
+
+            string = input.value.slice(0, -1);
             input.value = string;
-            // Hide copy button if display is cleared by DEL
+
             if (!string) hideCopyBtn();
+
+            updatePreview();
         }
 
         else if (value === "√") {
+
             let num = parseFloat(input.value);
+
             if (num < 0 || isNaN(num)) {
+
                 input.value = "Error";
-                hideCopyBtn();
-            } else {
-                input.value = Math.sqrt(num);
                 string = "";
-                showCopyBtn(); // result is ready
+                hideCopyBtn();
+
+            } else {
+
+                input.value = Math.sqrt(num);
+                string = input.value;
+                showCopyBtn();
             }
+
+            preview.textContent = "";
         }
 
         else if (value === "!") {
+
             let num = parseFloat(input.value);
             let result = factorial(num);
+
             input.value = result;
-            string = "";
-            if (result !== "Error") showCopyBtn(); // result is ready
-            else hideCopyBtn();
+
+            string = result !== "Error" ? String(result) : "";
+
+            preview.textContent = "";
+
+            result !== "Error" ? showCopyBtn() : hideCopyBtn();
         }
 
-        else {
+        else if (
+            !isNaN(value) ||
+            value === "+" ||
+            value === "-" ||
+            (string !== "" && "+-*/().!".includes(value))
+        ) {
+
+            if ("+-*/".includes(value) && "+-*/".includes(string.slice(-1))) {
+
+                if (string.length === 1 && !"+-".includes(value)) return;
+
+                string = string.slice(0, -1);
+            }
+
             string += value;
+
             input.value = string;
-            hideCopyBtn(); // user is still typing, hide the button
-            updatePreview();  
+
+            hideCopyBtn();
+
+            updatePreview();
         }
+
+        input.scrollLeft = input.scrollWidth;
     });
 });
 
-// Enter key support
+// ==================== ENTER KEY SUPPORT ====================
 document.addEventListener("keydown", (e) => {
- if (e.key === "Enter") {
-    try {
 
-        if (string === "" && lastOperator && lastOperand !== null) {
-            let expression = lastResult + lastOperator + lastOperand;
-            lastResult = eval(expression);
-            input.value = lastResult;
-            showCopyBtn();
-            return;
-        }
-
-        let result = eval(input.value);
-
-        if (!isFinite(result)) {
-            input.value = "Can't divide by zero";
-            string = "";
-            preview.textContent = "";
-            hideCopyBtn();
-            return;
-        }
-
-        let match = input.value.match(/([+\-*/])(\d+\.?\d*)$/);
-        if (match) {
-            lastOperator = match[1];
-            lastOperand = match[2];
-        }
-
-        lastResult = result;
-        input.value = result;
-        string = "";
-        preview.textContent = "";
-        showCopyBtn();
-
-    } catch {
-        input.value = "Error";
-        string = "";
-        preview.textContent = "";
-        hideCopyBtn();
-    }
-}
-});
-
-// Block invalid keyboard input
-const allowedKeys = "0123456789+-*/().!";
-input.addEventListener("keypress", (e) => {
-    if (!allowedKeys.includes(e.key)) {
-        e.preventDefault();
+    if (e.key === "Enter") {
+        string = input.value;
+        calculate();
     }
 });
 
-// Allow pasting values into the calculator (e.g. a copied result)
-input.addEventListener("paste", (e) => {
-    e.preventDefault();
-    const pasted = (e.clipboardData || window.clipboardData).getData("text");
-    // Only allow if the pasted text is a valid number
-    if (!isNaN(pasted) && pasted.trim() !== "") {
-        string = pasted.trim();
-        input.value = string;
-        hideCopyBtn();
-    }
-});
+// ==================== INPUT LISTENER ====================
 input.addEventListener("input", () => {
     string = input.value;
     updatePreview();
+});
+
+// ==================== BLOCK INVALID KEYBOARD INPUT ====================
+input.addEventListener("keydown", (e) => {
+
+    if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab"].includes(e.key)) return;
+
+    if (!allowedKeys.includes(e.key)) {
+        e.preventDefault();
+    }
 });
