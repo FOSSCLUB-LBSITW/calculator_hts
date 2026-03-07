@@ -120,6 +120,12 @@ buttons.forEach((button) => {
 
         let value = e.target.innerHTML;
 
+        if (input.value === "Error" || input.value === "Can't divide by zero" || input.value === "Too Large") {
+            if (value !== "AC") {
+                input.value = "";
+                string = "";
+            }
+        }
         // ===== MEMORY FUNCTIONS =====
 
         if (value === "MC") {
@@ -236,6 +242,34 @@ buttons.forEach((button) => {
         input.scrollLeft = input.scrollWidth;
     });
 });
+// =====================================================
+
+
+// ==================== CALCULATE FUNCTION ====================
+function calculate() {
+    if (!input.value) return;
+
+    try {
+        let result = eval(input.value);
+
+        if (!isFinite(result)) {
+            input.value = "Can't divide by zero";
+            hideCopyBtn();
+        } else {
+            input.value = result;
+            showCopyBtn();
+        }
+
+        string = "";
+        preview.textContent = "";
+    } catch {
+        input.value = "Error";
+        string = "";
+        hideCopyBtn();
+    }
+}
+// =====================================================
+
 
 // ==================== ENTER KEY SUPPORT ====================
 document.addEventListener("keydown", (e) => {
@@ -254,10 +288,32 @@ input.addEventListener("input", () => {
 
 // ==================== BLOCK INVALID KEYBOARD INPUT ====================
 input.addEventListener("keydown", (e) => {
-
-    if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab"].includes(e.key)) return;
-
-    if (!allowedKeys.includes(e.key)) {
-        e.preventDefault();
+    if (input.value === "Error" || input.value === "Can't divide by zero" || input.value === "Too Large") {
+        if (allowedKeys.includes(e.key) || e.key === "Backspace" || e.key === "Delete") {
+            input.value = "";
+            string = "";
+        }
     }
+
+    if (
+        !allowedKeys.includes(e.key) &&
+        e.key !== "Backspace" &&
+        e.key !== "Delete" &&
+        e.key !== "Enter" &&
+        e.key !== "ArrowLeft" &&
+        e.key !== "ArrowRight"
+    ) {
+      if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab"].includes(e.key)) return;
+    
+      const isAtStart = input.selectionStart === 0;
+      const isOp = "+-*/".includes(e.key);
+      const lastOp = "+-*/".includes(input.value.slice(-1));
+
+      if ((isAtStart && !"+-0123456789".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
+
+      if (isOp && lastOp && input.selectionStart === input.value.length) {
+        if (input.value.length === 1 && !"+-".includes(e.key)) return e.preventDefault();
+        e.preventDefault();
+        input.value = string = input.value.slice(0, -1) + e.key;
+      }
 });
