@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculator</title>
+    <title>Calculator — #26 π and e</title>
     <link rel="icon" href="web_Icon/favicon.ico">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
     <main class="main-body">
@@ -48,12 +46,23 @@
                 <div id="unitResult" class="unit-result">—</div>
                 <button id="unitUseResult" class="unit-use-btn">Use result in calculator</button>
             </div>
-            <div class="row" style="grid-template-columns: repeat(5, 1fr);">
+
+            <!-- Memory Buttons -->
+            <div class="row">
+                <button class="operator">MC</button>
+                <button class="operator">MR</button>
+                <button class="operator">M+</button>
+                <button class="operator">M-</button>
+            </div>
+
+            <div class="row" style="grid-template-columns: repeat(7, 1fr);">
                 <button class="operator">AC</button>
                 <button class="operator">DEL</button>
                 <button class="operator">%</button>
                 <button class="operator">√</button>
                 <button class="operator">!</button>
+                <button class="operator">π</button>
+                <button class="operator">e</button>
             </div>
 
             <div class="row">
@@ -93,3 +102,4 @@
     <script src="script.js"></script>
 
 </body>
+</html>

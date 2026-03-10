@@ -40,7 +40,7 @@ copyBtn.addEventListener("click", () => {
             copyBtn.textContent = "📋";
             copyBtn.classList.remove("copied");
         }, 2000);
-    });
+    }).catch(() => { input.select(); document.execCommand("copy"); });
 });
 
 // ==================== FACTORIAL ====================
@@ -183,6 +183,24 @@ buttons.forEach((button) => {
                 memory -= parseFloat(input.value);
             }
             return;
+        }
+
+        // ===== PI and E =====
+
+        else if (value === "π") {
+            if (string && /[\d)]$/.test(string)) string += "*";
+            string += Math.PI;
+            input.value = string;
+            hideCopyBtn();
+            updatePreview();
+        }
+
+        else if (value === "e") {
+            if (string && /[\d)]$/.test(string)) string += "*";
+            string += Math.E;
+            input.value = string;
+            hideCopyBtn();
+            updatePreview();
         }
 
         // ===== CALCULATE =====
