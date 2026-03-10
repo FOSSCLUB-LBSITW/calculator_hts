@@ -71,7 +71,6 @@ function preprocessString(str) {
 }
 // =====================================================
 
-
 // ==================== LIVE PREVIEW ====================
 function updatePreview() {
 
@@ -81,7 +80,6 @@ function updatePreview() {
     }
 
     try {
-
         let processed = preprocessString(string);
         let result = eval(processed);
 
@@ -102,26 +100,49 @@ function calculate() {
     if (!input.value) return;
 
     try {
+        // If "=" pressed repeatedly
+        if (string === "" && lastOperator && lastOperand !== null) {
+            let expression = lastResult + lastOperator + lastOperand;
+            lastResult = eval(expression);
+            input.value = lastResult;
+            showCopyBtn();
+            return;
+        }
 
-        let processed = preprocessString(input.value);
+        let processed = preprocessString(string);
         let result = eval(processed);
 
         if (!isFinite(result)) {
             input.value = "Can't divide by zero";
+            string = "";
+            preview.textContent = "";
             hideCopyBtn();
-        } else {
-            input.value = result;
-            showCopyBtn();
+            return;
         }
 
+        // Save last operator and operand
+        let match = string.match(/([+\-*/])(\d+\.?\d*)$/);
+        if (match) {
+            lastOperator = match[1];
+            lastOperand = match[2];
+        }
+
+        lastResult = result;
+
+        input.value = result;
         string = "";
         preview.textContent = "";
+        showCopyBtn();
+
     } catch {
         input.value = "Error";
         string = "";
+        preview.textContent = "";
         hideCopyBtn();
     }
 }
+
+// =====================================================
 
 // ==================== BUTTON CLICK ====================
 buttons.forEach((button) => {
@@ -226,16 +247,9 @@ buttons.forEach((button) => {
             input.value = string;
             hideCopyBtn();
             updatePreview();
-
         }
 
-        else if (
-            !isNaN(value) ||
-            value === "+" ||
-            value === "-" ||
-            (string !== "" && "+-*/().!%".includes(value))
-        ) {
-
+        else if (!isNaN(value) || value === "+" || value === "-" || (string !== "" && "+-*/().!%".includes(value))) {
             if ("+-*/".includes(value) && "+-*/".includes(string.slice(-1))) {
 
                 if (string.length === 1 && !"+-".includes(value)) return;
@@ -272,7 +286,6 @@ buttons.forEach((button) => {
     });
 });
 // =====================================================
-
 
 // ==================== ENTER KEY SUPPORT ====================
 document.addEventListener("keydown", (e) => {
@@ -361,4 +374,112 @@ input.addEventListener("paste", (e) => {
         updatePreview();
     }
 });
+// =====================================================
+
+// ==================== UNIT CONVERTER ====================
+const unitToggle = document.getElementById("unitToggle");
+const unitPanel = document.getElementById("unitPanel");
+const unitCategory = document.getElementById("unitCategory");
+const unitFrom = document.getElementById("unitFrom");
+const unitTo = document.getElementById("unitTo");
+const unitInputEl = document.getElementById("unitInput");
+const unitResult = document.getElementById("unitResult");
+const unitUseResult = document.getElementById("unitUseResult");
+
+const unitData = {
+    length: {
+        units: ["m", "km", "cm", "mm", "mi", "yd", "ft", "in"],
+        toBase: { m:1, km:1000, cm:0.01, mm:0.001, mi:1609.344, yd:0.9144, ft:0.3048, in:0.0254 }
+    },
+    weight: {
+        units: ["kg", "g", "mg", "lb", "oz", "t"],
+        toBase: { kg:1, g:0.001, mg:0.000001, lb:0.453592, oz:0.0283495, t:1000 }
+    },
+    temperature: {
+        units: ["°C", "°F", "K"],
+        toBase: null // special case
+    },
+    area: {
+        units: ["m²", "km²", "cm²", "ft²", "in²", "acre", "ha"],
+        toBase: { "m²":1, "km²":1e6, "cm²":0.0001, "ft²":0.092903, "in²":0.00064516, "acre":4046.86, "ha":10000 }
+    },
+    speed: {
+        units: ["m/s", "km/h", "mph", "knot"],
+        toBase: { "m/s":1, "km/h":0.277778, "mph":0.44704, "knot":0.514444 }
+    },
+    volume: {
+        units: ["L", "mL", "m³", "ft³", "gal", "qt", "pt", "fl oz"],
+        toBase: { "L":1, "mL":0.001, "m³":1000, "ft³":28.3168, "gal":3.78541, "qt":0.946353, "pt":0.473176, "fl oz":0.0295735 }
+    },
+    data: {
+        units: ["B", "KB", "MB", "GB", "TB"],
+        toBase: { "B":1, "KB":1024, "MB":1048576, "GB":1073741824, "TB":1099511627776 }
+    }
+};
+
+function populateUnitSelects() {
+    const cat = unitCategory.value;
+    const units = unitData[cat].units;
+    [unitFrom, unitTo].forEach((sel, idx) => {
+        sel.innerHTML = "";
+        units.forEach((u, i) => {
+            const opt = document.createElement("option");
+            opt.value = u; opt.textContent = u;
+            if (idx === 0 && i === 0) opt.selected = true;
+            if (idx === 1 && i === 1) opt.selected = true;
+            sel.appendChild(opt);
+        });
+    });
+    doConvert();
+}
+
+function convertTemperature(val, from, to) {
+    let celsius;
+    if (from === "°C") celsius = val;
+    else if (from === "°F") celsius = (val - 32) * 5/9;
+    else celsius = val - 273.15;
+
+    if (to === "°C") return celsius;
+    if (to === "°F") return celsius * 9/5 + 32;
+    return celsius + 273.15;
+}
+
+function doConvert() {
+    const val = parseFloat(unitInputEl.value);
+    if (isNaN(val)) { unitResult.textContent = "—"; return; }
+    const cat = unitCategory.value;
+    const from = unitFrom.value;
+    const to = unitTo.value;
+
+    let result;
+    if (cat === "temperature") {
+        result = convertTemperature(val, from, to);
+    } else {
+        const base = val * unitData[cat].toBase[from];
+        result = base / unitData[cat].toBase[to];
+    }
+
+    const formatted = parseFloat(result.toPrecision(10));
+    unitResult.textContent = `${formatted} ${to}`;
+    unitUseResult.dataset.value = formatted;
+}
+
+unitToggle.addEventListener("click", () => unitPanel.classList.toggle("hidden"));
+unitCategory.addEventListener("change", populateUnitSelects);
+unitFrom.addEventListener("change", doConvert);
+unitTo.addEventListener("change", doConvert);
+unitInputEl.addEventListener("input", doConvert);
+
+unitUseResult.addEventListener("click", () => {
+    const val = unitUseResult.dataset.value;
+    if (!val) return;
+    string = val;
+    input.value = string;
+    showCopyBtn();
+    updatePreview();
+    unitPanel.classList.add("hidden");
+});
+
+// Init
+populateUnitSelects();
 // =====================================================
