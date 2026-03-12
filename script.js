@@ -2,8 +2,7 @@ let input = document.getElementById("inputBox");
 let buttons = document.querySelectorAll(".calc button");
 let preview = document.getElementById("preview");
 let string = "";
-
-const allowedKeys = "0123456789+-*/().!";
+const allowedKeys = "0123456789+-*/().!%";
 
 let lastOperator = null;
 let lastOperand = null;
@@ -216,6 +215,21 @@ buttons.forEach((button) => {
             result !== "Error" ? showCopyBtn() : hideCopyBtn();
         }
 
+        else if (value === "%") {
+            try {
+                let num = eval(string);
+                if (!isFinite(num)) throw new Error('invalid');
+                input.value = num / 100;
+                string = String(input.value);
+                showCopyBtn();
+            } catch {
+                input.value = "Error";
+                string = "";
+                hideCopyBtn();
+            }
+            preview.textContent = "";
+        }
+
         else if (
             !isNaN(value) ||
             value === "+" ||
@@ -242,32 +256,6 @@ buttons.forEach((button) => {
         input.scrollLeft = input.scrollWidth;
     });
 });
-// =====================================================
-
-
-// ==================== CALCULATE FUNCTION ====================
-function calculate() {
-    if (!input.value) return;
-
-    try {
-        let result = eval(input.value);
-
-        if (!isFinite(result)) {
-            input.value = "Can't divide by zero";
-            hideCopyBtn();
-        } else {
-            input.value = result;
-            showCopyBtn();
-        }
-
-        string = "";
-        preview.textContent = "";
-    } catch {
-        input.value = "Error";
-        string = "";
-        hideCopyBtn();
-    }
-}
 // =====================================================
 
 
@@ -303,17 +291,17 @@ input.addEventListener("keydown", (e) => {
         e.key !== "ArrowLeft" &&
         e.key !== "ArrowRight"
     ) {
-      if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab"].includes(e.key)) return;
-    
-      const isAtStart = input.selectionStart === 0;
-      const isOp = "+-*/".includes(e.key);
-      const lastOp = "+-*/".includes(input.value.slice(-1));
+        if (["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Enter", "Tab"].includes(e.key)) return;
 
-      if ((isAtStart && !"+-0123456789".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
+        const isAtStart = input.selectionStart === 0;
+        const isOp = "+-*/".includes(e.key);
+        const lastOp = "+-*/".includes(input.value.slice(-1));
 
-      if (isOp && lastOp && input.selectionStart === input.value.length) {
-        if (input.value.length === 1 && !"+-".includes(e.key)) return e.preventDefault();
-        e.preventDefault();
-        input.value = string = input.value.slice(0, -1) + e.key;
-      }
-});
+        if ((isAtStart && !"+-0123456789".includes(e.key)) || !allowedKeys.includes(e.key)) return e.preventDefault();
+
+        if (isOp && lastOp && input.selectionStart === input.value.length) {
+            if (input.value.length === 1 && !"+-".includes(e.key)) return e.preventDefault();
+            e.preventDefault();
+            input.value = string = input.value.slice(0, -1) + e.key;
+        }
+    });
