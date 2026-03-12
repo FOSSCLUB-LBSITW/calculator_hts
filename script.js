@@ -58,6 +58,20 @@ function factorial(n) {
     return fact;
 }
 
+// ==================== PREPROCESS STRING ====================
+function preprocessString(str) {
+    let processed = str.replace(/(\d+\.?\d*)!/g, (match, p1) => {
+        let n = parseFloat(p1);
+        let f = factorial(n);
+        if (f === "Error" || f === "Too Large") throw new Error(f);
+        return f;
+    });
+    processed = processed.replace(/(\d+\.?\d*)%/g, "(($1)/100)");
+    return processed;
+}
+// =====================================================
+
+
 // ==================== LIVE PREVIEW ====================
 function updatePreview() {
 
@@ -68,7 +82,8 @@ function updatePreview() {
 
     try {
 
-        let result = eval(string);
+        let processed = preprocessString(string);
+        let result = eval(processed);
 
         if (!isFinite(result)) {
             preview.textContent = "";
@@ -84,28 +99,23 @@ function updatePreview() {
 
 // ==================== CALCULATE FUNCTION ====================
 function calculate() {
+    if (!input.value) return;
 
     try {
-
-        let result = eval(string);
+        let processed = preprocessString(input.value);
+        let result = eval(processed);
 
         if (!isFinite(result)) {
-
             input.value = "Can't divide by zero";
-            string = "";
             hideCopyBtn();
-
         } else {
-
             input.value = result;
-            string = String(result);
             showCopyBtn();
         }
 
+        string = "";
         preview.textContent = "";
-
     } catch {
-
         input.value = "Error";
         string = "";
         hideCopyBtn();
@@ -202,17 +212,19 @@ buttons.forEach((button) => {
         }
 
         else if (value === "!") {
+            if (string !== "" && "+-*/(".includes(string.slice(-1))) return;
+            string += "!";
+            input.value = string;
+            hideCopyBtn();
+            updatePreview();
+        }
 
-            let num = parseFloat(input.value);
-            let result = factorial(num);
-
-            input.value = result;
-
-            string = result !== "Error" ? String(result) : "";
-
-            preview.textContent = "";
-
-            result !== "Error" ? showCopyBtn() : hideCopyBtn();
+        else if (value === "%") {
+            if (string !== "" && "+-*/(".includes(string.slice(-1))) return;
+            string += "%";
+            input.value = string;
+            hideCopyBtn();
+            updatePreview();
         }
 
         else if (value === "%") {
