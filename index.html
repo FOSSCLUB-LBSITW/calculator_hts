@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculator</title>
+    <title>Calculator — #26 π and e</title>
     <link rel="icon" href="web_Icon/favicon.ico">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
     <main class="main-body">
@@ -21,7 +19,35 @@
             </div>
             <div id="preview" class="preview"></div>
 
-            <!-- ✅ MEMORY BUTTONS -->
+            <!-- Unit Converter Toggle -->
+            <div class="unit-bar">
+                <button id="unitToggle" class="unit-toggle-btn">⇄ Unit Converter</button>
+            </div>
+
+            <!-- Unit Converter Panel -->
+            <div id="unitPanel" class="unit-panel hidden">
+                <div class="unit-row">
+                    <select id="unitCategory" class="unit-select">
+                        <option value="length">Length</option>
+                        <option value="weight">Weight</option>
+                        <option value="temperature">Temperature</option>
+                        <option value="area">Area</option>
+                        <option value="speed">Speed</option>
+                        <option value="volume">Volume</option>
+                        <option value="data">Data</option>
+                    </select>
+                </div>
+                <div class="unit-row">
+                    <input type="number" id="unitInput" class="unit-input" placeholder="Enter value">
+                    <select id="unitFrom" class="unit-select-small"></select>
+                    <span class="unit-arrow">→</span>
+                    <select id="unitTo" class="unit-select-small"></select>
+                </div>
+                <div id="unitResult" class="unit-result">—</div>
+                <button id="unitUseResult" class="unit-use-btn">Use result in calculator</button>
+            </div>
+
+            <!-- Memory Buttons -->
             <div class="row">
                 <button class="operator">MC</button>
                 <button class="operator">MR</button>
@@ -29,13 +55,14 @@
                 <button class="operator">M-</button>
             </div>
 
-            <!-- Existing Control Row -->
-            <div class="row" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="row" style="grid-template-columns: repeat(7, 1fr);">
                 <button class="operator">AC</button>
                 <button class="operator">DEL</button>
                 <button class="operator">%</button>
                 <button class="operator">√</button>
                 <button class="operator">!</button>
+                <button class="operator">π</button>
+                <button class="operator">e</button>
             </div>
 
             <div class="row">
@@ -73,4 +100,6 @@
     </main>
 
     <script src="script.js"></script>
+
 </body>
+</html>
